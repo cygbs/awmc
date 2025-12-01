@@ -3,8 +3,10 @@ import os
 import time
 import requests
 from urllib.parse import unquote
-from ultralytics import YOLO
+from 库 import PSNR方法计算差异 as PSNR
 print("完成导入。")
+
+群号= 737461713
 
 def is_image_message(message):
     """
@@ -29,7 +31,7 @@ def is_image_message(message):
 def get_last_group_message():
     url = "http://192.168.31.248:3000/get_group_msg_history"
     params = {
-        "group_id": 在这写群号（这是个标记）
+        "group_id": 群号
     }
     
     try:
@@ -302,24 +304,26 @@ if __name__ == "__main__":
                         
                         # 下载图片
                         local_path = download_image(image_url, filename)
+
+                        图片1, 图片2 = PSNR.加载并统一尺寸("test.jpeg", local_path)
                         
                         if local_path and os.path.exists(local_path):
-                            # 计算平均置信度
-                            avg_confidence = get_average_confidence(model_path, local_path)
+                            # 相似度
+                            avg_confidence = PSNR.计算峰值信噪比(图片1, 图片2)
                             
-                            print(f"图片检测完成，平均置信度: {avg_confidence:.2f}")
+                            print(f"图片检测完成，相似度: {avg_confidence}")
                             
-                            # 如果置信度超过98%，打印信息
-                            if avg_confidence > 0.98:
+                            # 如果相似度超过11，打印信息
+                            if avg_confidence > 11:
                                 sender_name = last_msg.get('sender', {}).get('nickname', '未知用户')
-                                print(f"🚨 高置信度检测! 置信度: {avg_confidence:.2f}")
+                                print(f"🚨 高置信度检测! 置信度: {avg_confidence}")
                                 print(f"   发送者: {sender_name}")
                                 print(f"   图片文件: {filename}")
                                 print(f"    ID: {message_id}")
                                 success = send_reply_message(
-                                    group_id=在这写群号（这是个标记）,
+                                    group_id=群号,
                                     reply_message_id=message_id,
-                                    message_content="awmc! 置信度"+str(avg_confidence)
+                                    message_content="awmc! "+str(avg_confidence)
                                 )
                                 if success:
                                     print("回复消息发送成功!")
